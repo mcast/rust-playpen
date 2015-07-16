@@ -176,7 +176,7 @@
 
     function compile(emit, result, code, version, optimize, button) {
         var syntax = document.getElementById('asm-flavor').value;
-        send("compile.json", {emit: emit, code: code, version: version, optimize: optimize,
+        send("http://play.rust-lang.com/compile.json", {emit: emit, code: code, version: version, optimize: optimize,
                               color: true, highlight: true, syntax: syntax}, function(object) {
             if ("error" in object) {
                 set_result(result, "<pre class=\"rustc-output rustc-errors\"><samp></samp></pre>");
@@ -535,7 +535,7 @@
             return "[<a href=https://doc.rust-lang.org/error-index.html#" + code + ">" + code + "</a>]";
         }).replace(/run `rustc --explain (E\d\d\d\d)` to see a detailed explanation/g, function(text, code) {
             return "see the <a href=https://doc.rust-lang.org/error-index.html#" + code + ">detailed explanation for " + code + "</a>";
-        });
+        }) + "\n Pertwang!\n";
     }
 
     addEventListener("DOMContentLoaded", function() {
