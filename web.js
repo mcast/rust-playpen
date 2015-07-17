@@ -175,6 +175,11 @@
     }
 
     function compile(emit, result, code, version, optimize, button) {
+	var old = "<anon>:2:2: 4:4 \u001b[31merror: \u001b(B\u001b[m\u001b[1mthe parameter type `T` may not live long enough\u001b(B\u001b[m\u001b[35m [E0309]\u001b(B\u001b[m\n<anon>:18 pub struct AirspyIntoIterator<'a, T: AirspySupportedType<T>> {\n<anon>:19     airspy: &'a mut Airspy<T>,\n<anon>:20 }\n<anon>:6:6: 6:12 \u001b[36mhelp: \u001b(B\u001b[m\u001b[1mrun `rustc --explain E0309` to see a detailed explanation\u001b(B\u001b[m\n<anon>:18:1: 20:2 \u001b[36mhelp: \u001b(B\u001b[m\u001b[1mconsider adding an explicit lifetime bound `T: 'a`...\u001b(B\u001b[m\n<anon>:18:1: 20:2 \u001b[32mnote: \u001b(B\u001b[m\u001b[1m...so that the reference type `&'a mut Airspy<T>` does not outlive the data it points at\u001b(B\u001b[m\n<anon>:18 pub struct AirspyIntoIterator<'a, T: AirspySupportedType<T>> {\n<anon>:19     airspy: &'a mut Airspy<T>,\n<anon>:20 }\n\u001b[31merror: \u001b(B\u001b[m\u001b[1maborting due to previous error\u001b(B\u001b[m\nplaypen: application terminated with error code 101\n";
+	set_result(result, "<pre class=\"rustc-output rustc-errors\"><samp></samp></pre>");
+	result.firstChild.firstChild.innerHTML = formatCompilerOutput(old);
+	return;
+	
         var syntax = document.getElementById('asm-flavor').value;
         send("http://play.rust-lang.com/compile.json", {emit: emit, code: code, version: version, optimize: optimize,
                               color: true, highlight: true, syntax: syntax}, function(object) {
@@ -535,7 +540,6 @@
             return "[<a href=https://doc.rust-lang.org/error-index.html#" + code + ">" + code + "</a>]";
         }).replace(/run `rustc --explain (E\d\d\d\d)` to see a detailed explanation/g, function(text, code) {
             return "see the <a href=https://doc.rust-lang.org/error-index.html#" + code + ">detailed explanation for " + code + "</a>";
-        }) + "\n Pertwang!\n";
     }
 
     addEventListener("DOMContentLoaded", function() {
