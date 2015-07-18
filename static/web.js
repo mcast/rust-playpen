@@ -535,11 +535,34 @@
             });
     }
 
+    function jumpToLine(text, r1) {
+        return "<a onclick=\"javascript:editGo(" + r1 + ",1)\"" +
+            " onmouseover=\"javascript:editShowLine("+r1+")\"" +
+            " onmouseout=\"javascript:editRestore()\"" +
+            " class=\"linejump\">" + text + "</a>";
+    }
+
+    function jumpToRegion(text, r1,c1, r2,c2) {
+        return "<a onclick=\"javascript:editGo("+r1+","+c1+")\"" +
+            " onmouseover=\"javascript:editShowRegion("+r1+","+c1+", "+r2+","+c2+")\"" +
+            " onmouseout=\"javascript:editRestore()\"" +
+            " class=\"linejump\">" + text + "</a>";
+    }
+
     function formatCompilerOutput(text) {
-        return ansi2html(text).replace(/\[(E\d\d\d\d)\]/g, function(text, code) {
-            return "[<a href=https://doc.rust-lang.org/error-index.html#" + code + ">" + code + "</a>]";
-        }).replace(/run `rustc --explain (E\d\d\d\d)` to see a detailed explanation/g, function(text, code) {
-            return "see the <a href=https://doc.rust-lang.org/error-index.html#" + code + ">detailed explanation for " + code + "</a>";
+        return ansi2html(text)
+            .replace(/\[(E\d\d\d\d)\]/g,
+                     function(text, code) {
+                         return "[<a href=https://doc.rust-lang.org/error-index.html#" + code + ">" + code + "</a>]";
+                     })
+            .replace(/run `rustc --explain (E\d\d\d\d)` to see a detailed explanation/g,
+                     function(text, code) {
+                         return "see the <a href=https://doc.rust-lang.org/error-index.html#" + code
+                             + ">detailed explanation for " + code + "</a>";
+                     })
+            .replace(/&lt;anon&gt;:(\d+)$/mg, jumpToLine) // panicked at 'foo', $&
+            .replace(/^&lt;anon&gt;:(\d+):(\d+):\s+(\d+):(\d+)/mg, jumpToRegion)
+            .replace(/^&lt;anon&gt;:(\d+)/mg, jumpToLine);
     }
 
     addEventListener("DOMContentLoaded", function() {
@@ -695,3 +718,42 @@
 
     }, false);
 }());
+
+
+// called via javascript:fn events from formatCompilerOutput
+var old_range;
+
+function editorGet() {
+    return window.ace.edit("editor");
+}
+
+function editGo(r1,c1) {
+    var e = editorGet();
+    old_range = undefined;
+    e.focus();
+    e.selection.clearSelection();
+    e.selection.moveCursorTo(r1-1, c1-1, false);
+}
+
+function editRestore() {
+    if (old_range) {
+        editorGet().selection.setSelectionRange(old_range, false);
+    }
+}
+
+function editShowRegion(r1,c1, r2,c2) {
+    var es = editorGet().selection;
+    old_range = es.getRange();
+    es.clearSelection();
+    es.setSelectionAnchor(r1-1, c1-1);
+    es.selectTo(r2-1, c2-1);
+}
+
+function editShowLine(r1) {
+    var es = editorGet().selection;
+    old_range = es.getRange();
+    es.clearSelection();
+    es.moveCursorTo(r1-1, 0);
+    es.moveCursorLineEnd();
+    es.selectTo(r1-1, 0);
+}
